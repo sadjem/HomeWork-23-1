@@ -1,78 +1,61 @@
-import org.hibernate.Session;
-import org.hibernate.SessionFactory;
-import org.hibernate.Transaction;
-import org.hibernate.cfg.Configuration;
-import org.hibernate.query.Query;
-
-import java.util.List;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.sql.Statement;
 
 public class UserDao {
-    private SessionFactory sessionFactory;
+    private Connection connection;
 
-    public UserDao() {
-        sessionFactory = new Configuration().configure().buildSessionFactory();
-    }
-
-    public void close() {
-        sessionFactory.close();
-    }
-
-    public void removeAll() {
-        try (Session session = sessionFactory.openSession()) {
-            Transaction transaction = session.beginTransaction();
-            String hql = String.format("DELETE FROM %s", Student.class.getSimpleName());
-            Query query = session.createQuery(hql);
-            int count = query.executeUpdate();
-            transaction.commit();
+    static {
+        try {
+            Class.forName("org.postgresql.Driver");
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
         }
     }
 
-    public void addGroup(Group group) {
-        try (Session session = sessionFactory.openSession()) {
-            Transaction transaction = session.beginTransaction();
-            session.save(group);
-            transaction.commit();
+    public UserDao() throws SQLException {
+        connection = DriverManager.getConnection("jdbc:postgresql://127.0.0.1:5432/test",
+                "postgres",
+                "");
+        createGroupTable();
+        createStudentTable();
+    }
+
+    private void createStudentTable() throws SQLException {
+        try (Statement statement = connection.createStatement()) {
+            statement.execute("CREATE TABLE IF NOT EXISTS groups (\n" +
+                    "_id uuid PRIMARY KEY,\n" +
+                    "name varchar(100)\n" +
+                    ");");
         }
     }
 
-    public void updateUser(Student student) {
-        try (Session session = sessionFactory.openSession()) {
-            Transaction transaction = session.beginTransaction();
-            session.update(student);
-            transaction.commit();
+    private void createGroupTable() throws SQLException {
+        try(Statement statement = connection.createStatement()){
+            statement.execute("CREATE TABLE IF NOT EXISTS students (\n" +
+                    "id uuid PRIMARY KEY, \n" +
+                    "name varchar(100), \n" +
+                    "age int\n" +
+                    ");");
+        }
+    }
+    protected void insertGroup(Group group) throws SQLException {
+        try(Statement statement = connection.createStatement()){
+            String request = String.format("INSERT INTO groups VALUES ('%s', '%s');", group.getId(), group.getName());
+            statement.execute(request);
+            for(Student student : group.getStudents()){
+                student.setGroupId(group.getId());
+                insertStudent(student);
+            }
         }
     }
 
-
-    public Student getStudent(int id) {
-        try (Session session = sessionFactory.openSession()){
-            return session
-                    .createQuery("FROM Student WHERE id = :id ", Student.class)
-                    .setParameter("id", id)
-                    .getSingleResult();
-        }
-    }
-
-    public void removeStudent(int id) {
-        try (Session session = sessionFactory.openSession()) {
-            Transaction transaction = session.beginTransaction();
-            session.delete("FROM Student WHERE id = :id", Student.class);
-            transaction.commit();
-        }
-    }
-
-
-    public void removeUserByName(String name) {
-        try (Session session = sessionFactory.openSession()) {
-            Transaction transaction = session.beginTransaction();
-            session.delete("FROM Student WHERE name = :name", Student.class);
-            transaction.commit();
-        }
-    }
-
-    public List<Student> getAllUsers() {
-        try (Session session = sessionFactory.openSession()) {
-            return session.createQuery("FROM Student", Student.class).list();
+    private void insertStudent(Student student) throws SQLException {
+        try (Statement statement = connection.createStatement()) {
+            String request = String.format("INSERT INTO students VALUES ('%s', '%s', '%s', '%d');",
+                    student.getId(), student.getGroupId(), student.getName(), student.getAge());
+            statement.execute(request);
         }
     }
 }

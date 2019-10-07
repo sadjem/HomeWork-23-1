@@ -1,20 +1,25 @@
-import javax.persistence.*;
-import java.util.ArrayList;
-import java.util.List;
 
-@Entity
-@Table(name = "Students")
 public class Student {
-    @Id
+    private String id;
     private String name;
     private int age;
-    @OneToMany(targetEntity=Group.class, mappedBy="groups",
-            fetch=FetchType.EAGER)
-    private List<Group> groups = new ArrayList<>();
+    private String groupId;
 
-    public Student(String name, int age) {
+    public Student(String id, String name, int age) {
+        this.id = id;
         this.name = name;
         this.age = age;
+    }
+
+    public Student(String id, String name, int age, String groupId) {
+        this.id = id;
+        this.name = name;
+        this.age = age;
+        this.groupId = groupId;
+    }
+
+    public String getId() {
+        return id;
     }
 
     public String getName() {
@@ -25,28 +30,20 @@ public class Student {
         return age;
     }
 
-    public List<Group> getGroups() {
-        return groups;
+    public String getGroupId() {
+        return groupId;
     }
 
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public void setAge(int age) {
-        this.age = age;
-    }
-
-    public void setGroups(List<Group> groups) {
-        this.groups = groups;
+    public void setGroupId(String groupId) {
+        this.groupId = groupId;
     }
 
     @Override
     public String toString() {
-        return "Student{"
-                + ", name='" + name + '\'' +
+        return "{" +
+                "name='" + name + '\'' +
                 ", age=" + age +
-                ", groups=" + groups +
                 '}';
     }
+
 }

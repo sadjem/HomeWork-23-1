@@ -1,20 +1,32 @@
+import java.sql.SQLException;
+
 public class Main {
-    public static void main(String[] args) {
-        UserDao dao = new UserDao();
-        Group java = new Group("Java");
-        Group cpp = new Group("Cpp");
-        Student st1 = new Student("Alex", 22);
-        java.getStudents().add(st1);
+    public static void main(String[] args) throws SQLException {
+        Group javaGroup = createJavaGroup();
+        Group jsGroup = createJsGroup();
 
-        Student st2 = new Student("Ben", 33);
-        java.getStudents().add(st2);
+        try {
+            UserDao userDao = new UserDao();
+            userDao.insertGroup(javaGroup);
+            userDao.insertGroup(jsGroup);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
 
-        Student st3 = new Student("Carl", 44);
-        cpp.getStudents().add(st3);
-        System.out.println(java);
-        System.out.println(cpp);
-       dao.addGroup(java);
+    private static Group createJavaGroup() {
+        Group group = new Group(Helper.generateId(), "Java");
+        group.addStudent(new Student(Helper.generateId(), "Alex", 26));
+        group.addStudent(new Student(Helper.generateId(), "Oleg", 28));
+        group.addStudent(new Student(Helper.generateId(), "Igor", 15));
+        return group;
+    }
 
-        dao.close();
+    private static Group createJsGroup() {
+        Group group = new Group(Helper.generateId(), "Js");
+        group.addStudent(new Student(Helper.generateId(), "Sofia", 26));
+        group.addStudent(new Student(Helper.generateId(), "Alex", 27));
+        group.addStudent(new Student(Helper.generateId(), "Emilia", 30));
+        return group;
     }
 }
