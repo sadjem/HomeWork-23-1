@@ -18,33 +18,35 @@ public class UserDao {
         connection = DriverManager.getConnection("jdbc:postgresql://127.0.0.1:5432/test2",
                 "postgres",
                 "");
-        createGroupTable();
         createStudentTable();
+        createGroupTable();
     }
 
     private void createStudentTable() throws SQLException {
         try (Statement statement = connection.createStatement()) {
             statement.execute("CREATE TABLE IF NOT EXISTS groups (\n" +
-                    "_id uuid PRIMARY KEY,\n" +
+                    "id uuid PRIMARY KEY,\n" +
                     "name varchar(100)\n" +
                     ");");
         }
     }
 
     private void createGroupTable() throws SQLException {
-        try(Statement statement = connection.createStatement()){
+        try (Statement statement = connection.createStatement()) {
             statement.execute("CREATE TABLE IF NOT EXISTS students (\n" +
-                    "id uuid PRIMARY KEY, \n" +
-                    "name varchar(100), \n" +
+                    "id uuid PRIMARY KEY,\n" +
+                    "group_id uuid,\n" +
+                    "name varchar(100),\n" +
                     "age int\n" +
                     ");");
         }
     }
-    protected void insertGroup(Group group) throws SQLException {
-        try(Statement statement = connection.createStatement()){
+
+    public void insertGroup(Group group) throws SQLException {
+        try (Statement statement = connection.createStatement()) {
             String request = String.format("INSERT INTO groups VALUES ('%s', '%s');", group.getId(), group.getName());
             statement.execute(request);
-            for(Student student : group.getStudents()){
+            for (Student student : group.getStudents()) {
                 student.setGroupId(group.getId());
                 insertStudent(student);
             }
