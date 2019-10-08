@@ -53,7 +53,7 @@ public class UserDao {
 
     private void insertStudent(Student student) throws SQLException {
         try (Statement statement = connection.createStatement()) {
-            String request = String.format("INSERT INTO users VALUES ('%s', '%s', '%s', '%d');",
+            String request = String.format("INSERT INTO students VALUES ('%s', '%s', '%s', '%d');",
                     student.getId(), student.getGroupId(), student.getName(), student.getAge());
             statement.execute(request);
         }
